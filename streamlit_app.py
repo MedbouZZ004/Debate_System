@@ -20,24 +20,104 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for beautiful styling
+# Custom CSS for better styling
 st.markdown("""
     <style>
-    :root {
-        --primary-color: #1f77b4;
-        --secondary-color: #ff7f0e;
-        --success-color: #2ca02c;
-        --danger-color: #d62728;
-        --text-color: #333333;
+    body {
+        background-color: #ffffff;
+        color: #000000;
     }
     
     .main {
-        padding: 0;
+        background-color: #ffffff;
     }
     
-    .stTabs [data-baseweb="tab-list"] button {
-        font-size: 16px;
-        font-weight: 600;
+    .stMarkdown {
+        color: #000000;
+    }
+    
+    .argument-box {
+        background-color: #f0f8ff;
+        padding: 20px;
+        border-left: 6px solid #1f77b4;
+        border-radius: 8px;
+        margin: 15px 0;
+        color: #000000;
+    }
+    
+    .argument-box h4 {
+        color: #1f77b4;
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+    
+    .case-study-box {
+        background-color: #e8f4f8;
+        padding: 15px;
+        border-left: 4px solid #1f77b4;
+        border-radius: 8px;
+        margin: 10px 0;
+        color: #000000;
+        margin-left: 20px;
+        border-top: 2px solid #1f77b4;
+    }
+    
+    .case-study-box h5 {
+        color: #1f77b4;
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    
+    .position-correlation-box {
+        background-color: #f0f8ff;
+        padding: 15px;
+        border-left: 5px solid #1f77b4;
+        border-radius: 8px;
+        margin: 15px 0;
+        color: #000000;
+        border-top: 2px dashed #1f77b4;
+    }
+    
+    .position-correlation-box strong {
+        color: #1f77b4;
+    }
+    
+    .rebuttal-box {
+        background-color: #fff4e6;
+        padding: 15px;
+        border-left: 4px solid #ff7f0e;
+        border-radius: 5px;
+        margin: 10px 0;
+        color: #000000;
+    }
+    
+    .analysis-box {
+        background-color: #f0f8f0;
+        padding: 15px;
+        border-left: 4px solid #2ca02c;
+        border-radius: 5px;
+        margin: 10px 0;
+        color: #000000;
+    }
+    
+    .header-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .header-box h1 {
+        color: white;
+        margin: 0;
+    }
+    
+    .header-box p {
+        color: white;
+        margin: 5px 0;
     }
     
     .metric-card {
@@ -47,36 +127,8 @@ st.markdown("""
         margin: 10px 0;
     }
     
-    .argument-box {
-        background-color: #e8f4f8;
-        padding: 15px;
-        border-left: 4px solid #1f77b4;
-        border-radius: 5px;
-        margin: 10px 0;
-    }
-    
-    .rebuttal-box {
-        background-color: #fff4e6;
-        padding: 15px;
-        border-left: 4px solid #ff7f0e;
-        border-radius: 5px;
-        margin: 10px 0;
-    }
-    
-    .analysis-box {
-        background-color: #f0f8f0;
-        padding: 15px;
-        border-left: 4px solid #2ca02c;
-        border-radius: 5px;
-        margin: 10px 0;
-    }
-    
-    .header-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 10px;
-        margin-bottom: 20px;
+    a {
+        color: #1f77b4;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -309,6 +361,31 @@ with tab2:
                 if arg.impact:
                     st.write(f"**Impact:** {arg.impact}")
                 
+                # Display case studies if available
+                if arg.case_studies:
+                    st.write("**📚 Case Studies:**")
+                    for cs in arg.case_studies:
+                        st.markdown(f"""
+                            <div class="case-study-box">
+                            <h5>{cs.title}</h5>
+                            <p><strong>Background:</strong> {cs.background}</p>
+                            """, unsafe_allow_html=True)
+                        
+                        if cs.methodology:
+                            st.write(f"**Methodology:** {cs.methodology}")
+                        st.write(f"**Outcomes:** {cs.outcomes}")
+                        st.write(f"**Impact on Argument:** {cs.impact}")
+                        st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Display position correlation
+                if arg.position_correlation:
+                    st.markdown(f"""
+                        <div class="position-correlation-box">
+                        <strong>🔗 Position Correlation:</strong><br>
+                        {arg.position_correlation}
+                        </div>
+                        """, unsafe_allow_html=True)
+                
                 st.markdown("</div>", unsafe_allow_html=True)
             
             if state.proposition.rebuttals:
@@ -351,6 +428,31 @@ with tab2:
                 
                 if arg.impact:
                     st.write(f"**Impact:** {arg.impact}")
+                
+                # Display case studies if available
+                if arg.case_studies:
+                    st.write("**📚 Case Studies:**")
+                    for cs in arg.case_studies:
+                        st.markdown(f"""
+                            <div class="case-study-box">
+                            <h5>{cs.title}</h5>
+                            <p><strong>Background:</strong> {cs.background}</p>
+                            """, unsafe_allow_html=True)
+                        
+                        if cs.methodology:
+                            st.write(f"**Methodology:** {cs.methodology}")
+                        st.write(f"**Outcomes:** {cs.outcomes}")
+                        st.write(f"**Impact on Argument:** {cs.impact}")
+                        st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Display position correlation
+                if arg.position_correlation:
+                    st.markdown(f"""
+                        <div class="position-correlation-box">
+                        <strong>🔗 Position Correlation:</strong><br>
+                        {arg.position_correlation}
+                        </div>
+                        """, unsafe_allow_html=True)
                 
                 st.markdown("</div>", unsafe_allow_html=True)
             

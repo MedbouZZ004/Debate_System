@@ -9,6 +9,23 @@ from pydantic import BaseModel, Field, validator
 from datetime import datetime
 
 
+class CaseStudy(BaseModel):
+    """Represents a real-world case study supporting an argument."""
+    
+    title: str = Field(..., description="Title of the case study")
+    background: str = Field(..., description="Background and context of the case")
+    methodology: Optional[str] = Field(None, description="Approach or methodology used")
+    outcomes: str = Field(..., description="Results and outcomes achieved")
+    impact: str = Field(..., description="Overall impact and relevance to argument")
+    
+    @validator('title', 'background', 'outcomes', 'impact')
+    def non_empty_string(cls, v):
+        """Ensure non-empty strings."""
+        if not v or not v.strip():
+            raise ValueError("Field cannot be empty")
+        return v.strip()
+
+
 class Argument(BaseModel):
     """Represents a single argument."""
     
@@ -16,6 +33,8 @@ class Argument(BaseModel):
     reasoning: str = Field(..., description="Logical reasoning and explanation")
     evidence: List[str] = Field(default_factory=list, description="Supporting evidence")
     impact: Optional[str] = Field(None, description="Impact or significance")
+    case_studies: List[CaseStudy] = Field(default_factory=list, description="Real-world case studies")
+    position_correlation: Optional[str] = Field(None, description="How this argument correlates with the overall position")
     
     @validator('contention', 'reasoning')
     def non_empty_string(cls, v):
