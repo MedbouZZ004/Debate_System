@@ -17,7 +17,7 @@ class ResearchAgent(DebateAgent):
         """Initialize research agent."""
         super().__init__("ResearchAgent")
     
-    async def execute(self, motion: str, side: SideCase) -> Dict[str, Any]:
+    async def execute(self, motion: str, side: SideCase, language: str = "English") -> Dict[str, Any]:
         """
         Conduct research on the debate motion.
         
@@ -33,7 +33,7 @@ class ResearchAgent(DebateAgent):
         
         try:
             # Generate research prompt
-            prompt = self._build_research_prompt(motion, side)
+            prompt = self._build_research_prompt(motion, side, language)
             
             # Call LLM
             response = await self._call_llm(prompt)
@@ -55,9 +55,11 @@ class ResearchAgent(DebateAgent):
             self._log_error(f"research for {side.side}", str(e))
             raise
     
-    def _build_research_prompt(self, motion: str, side: SideCase) -> str:
+    def _build_research_prompt(self, motion: str, side: SideCase, language: str = "English") -> str:
         """Build research prompt for LLM."""
         side_stance = "supporting" if side.side == "Proposition" else "opposing"
+        
+        language_instruction = f"\n\nIMPORTANT: You MUST write your entire response in {language}. All text, analysis, definitions, and strategic points must be in {language}."
         
         prompt = f"""You are a debate expert preparing a {side.side} team for World Schools Debate.
 
@@ -88,33 +90,38 @@ Focus on:
 4. Strategic advantages for the {side.side} position
 5. Potential weaknesses to address
 
-Provide thorough, strategic research that will help the {side.side} team prepare strong arguments."""
+Provide thorough, strategic research that will help the {side.side} team prepare strong arguments.{language_instruction}"""
         
         return prompt
     
     def _parse_research_response(self, response: str, motion: str, side: SideCase) -> Dict[str, Any]:
         """Parse LLM response to extract research data."""
+        fallback = {
+            "motion_analysis": response,
+            "key_definitions": {},
+            "strategic_points": []
+        }
+
         try:
             import json
-            
+
             # Try to extract JSON from response
             start_idx = response.find('{')
             end_idx = response.rfind('}') + 1
-            
+
             if start_idx != -1 and end_idx > start_idx:
                 json_str = response[start_idx:end_idx]
                 data = json.loads(json_str)
-                return data
-            else:
-                # Fallback if JSON extraction fails
+
+                # Validate required keys; fill in safe defaults for any that are missing
                 return {
-                    "motion_analysis": response,
-                    "key_definitions": {},
-                    "strategic_points": []
+                    "motion_analysis": data.get("motion_analysis") or response,
+                    "key_definitions": data.get("key_definitions") or {},
+                    "strategic_points": data.get("strategic_points") or [],
                 }
-        except:
-            return {
-                "motion_analysis": response,
-                "key_definitions": {},
-                "strategic_points": []
-            }
+
+            # Fallback if JSON block not found
+            return fallback
+
+        except Exception:
+            return fallback

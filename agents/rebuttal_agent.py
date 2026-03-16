@@ -24,7 +24,8 @@ class RebuttalAgent(DebateAgent):
         defending_side: SideCase,
         attacking_side: SideCase,
         opponent_arguments: List[Argument],
-        num_rebuttals: int = 3
+        num_rebuttals: int = 3,
+        language: str = "English"
     ) -> Dict[str, Any]:
         """
         Generate rebuttals to opponent arguments.
@@ -49,7 +50,8 @@ class RebuttalAgent(DebateAgent):
                 defending_side,
                 attacking_side,
                 opponent_arguments,
-                num_rebuttals
+                num_rebuttals,
+                language
             )
             
             # Call LLM
@@ -77,7 +79,8 @@ class RebuttalAgent(DebateAgent):
         defending_side: SideCase,
         attacking_side: SideCase,
         opponent_arguments: List[Argument],
-        num_rebuttals: int
+        num_rebuttals: int,
+        language: str = "English"
     ) -> str:
         """Build rebuttals prompt for LLM."""
         defending_stance = "supporting" if defending_side.side == "Proposition" else "opposing"
@@ -123,7 +126,11 @@ Provide the rebuttals in exactly this JSON format - must be valid JSON:
 
 Generate {min(num_rebuttals, len(opponent_arguments))} strong rebuttals that effectively counter the {attacking_side.side} arguments and support our {defending_side.side} position."""
         
-        return prompt
+        language_instruction = (f"\n\nIMPORTANT: You MUST write your entire response "
+                                 f"\u2014 all rebuttals, logical flaws, counter-points, and impact explanations "
+                                 f"\u2014 in {language}. Do not use any other language.")
+        
+        return prompt + language_instruction
     
     def _parse_rebuttals_response(self, response: str) -> Dict[str, Any]:
         """Parse LLM response to extract rebuttals."""
