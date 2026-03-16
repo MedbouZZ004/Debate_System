@@ -23,7 +23,8 @@ class ArgumentConstructionAgent(DebateAgent):
         motion: str,
         side: SideCase,
         num_arguments: int = 3,
-        research_data: Dict[str, Any] = None
+        research_data: Dict[str, Any] = None,
+        language: str = "English"
     ) -> Dict[str, Any]:
         """
         Construct main arguments for a debate case.
@@ -43,7 +44,7 @@ class ArgumentConstructionAgent(DebateAgent):
         try:
             # Generate arguments prompt
             prompt = self._build_arguments_prompt(
-                motion, side, num_arguments, research_data
+                motion, side, num_arguments, research_data, language
             )
             
             # Call LLM
@@ -70,7 +71,8 @@ class ArgumentConstructionAgent(DebateAgent):
         motion: str,
         side: SideCase,
         num_arguments: int,
-        research_data: Dict[str, Any] = None
+        research_data: Dict[str, Any] = None,
+        language: str = "English"
     ) -> str:
         """Build arguments construction prompt for LLM."""
         side_stance = "supporting" if side.side == "Proposition" else "opposing"
@@ -83,6 +85,8 @@ Research Background:
 - Key Definitions: {json.dumps(research_data.get('key_definitions', {}))}
 - Strategic Points: {json.dumps(research_data.get('strategic_points', []))}
 """
+        
+        language_instruction = f"\n\nIMPORTANT: You MUST write your entire response — all contentions, reasoning, evidence, case studies, and position correlation — in {language}. Do not use any other language."
         
         prompt = f"""You are a highly sophisticated debate expert constructing compelling, well-developed main arguments for a {side.side} team in World Schools Debate.
 
@@ -143,7 +147,7 @@ Provide the arguments in exactly this JSON format - MUST be valid JSON:
 
 Construct {num_arguments} extraordinarily strong arguments supporting the {side.side} position. 
 Each argument must be development-grade, backed by real case studies, and show clear correlation with the team's strategic position.
-Focus on arguments that are hardest to rebut and most impactful in adjudication."""
+Focus on arguments that are hardest to rebut and most impactful in adjudication.{language_instruction}"""
         
         return prompt
     

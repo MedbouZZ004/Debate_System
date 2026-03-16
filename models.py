@@ -102,6 +102,7 @@ class DebateConfig(BaseModel):
     
     num_arguments: int = Field(default=3, ge=1, le=10, description="Number of main arguments per side")
     num_rebuttals: int = Field(default=3, ge=1, le=10, description="Number of rebuttals per side")
+    language: str = Field(default="English", description="Language for the debate output (English, Arabic, French)")
     
     @validator('motion')
     def non_empty_motion(cls, v):

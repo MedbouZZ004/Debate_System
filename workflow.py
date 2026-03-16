@@ -59,8 +59,8 @@ class DebateWorkflow:
             # Phase 1: Research (Parallel)
             self.logger.info("Phase 1: Research for both sides")
             prop_research, opp_research = await asyncio.gather(
-                self.research_agent.execute(config.motion, state.proposition),
-                self.research_agent.execute(config.motion, state.opposition)
+                self.research_agent.execute(config.motion, state.proposition, language=config.language),
+                self.research_agent.execute(config.motion, state.opposition, language=config.language)
             )
             
             # Update state with research
@@ -76,13 +76,15 @@ class DebateWorkflow:
                     config.motion,
                     state.proposition,
                     num_arguments=config.num_arguments,
-                    research_data=prop_research
+                    research_data=prop_research,
+                    language=config.language
                 ),
                 self.argument_agent.execute(
                     config.motion,
                     state.opposition,
                     num_arguments=config.num_arguments,
-                    research_data=opp_research
+                    research_data=opp_research,
+                    language=config.language
                 )
             )
             
@@ -108,14 +110,16 @@ class DebateWorkflow:
                     state.proposition,
                     state.opposition,
                     state.opposition.arguments,
-                    num_rebuttals=config.num_rebuttals
+                    num_rebuttals=config.num_rebuttals,
+                    language=config.language
                 ),
                 self.rebuttal_agent.execute(
                     config.motion,
                     state.opposition,
                     state.proposition,
                     state.proposition.arguments,
-                    num_rebuttals=config.num_rebuttals
+                    num_rebuttals=config.num_rebuttals,
+                    language=config.language
                 )
             )
             
@@ -128,7 +132,8 @@ class DebateWorkflow:
             analysis = await self.analysis_agent.execute(
                 config.motion,
                 state.proposition,
-                state.opposition
+                state.opposition,
+                language=config.language
             )
             
             # Update state with analysis

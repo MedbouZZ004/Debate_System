@@ -30,7 +30,8 @@ class DebateManager:
         proposition_members: list,
         opposition_members: list,
         num_arguments: int = 3,
-        num_rebuttals: int = 3
+        num_rebuttals: int = 3,
+        language: str = "English"
     ) -> DebateSessionModel:
         """
         Create and execute a debate.
@@ -41,6 +42,7 @@ class DebateManager:
             opposition_members: Opposition team members
             num_arguments: Number of arguments per side
             num_rebuttals: Number of rebuttals per side
+            language: Language for output (English, Arabic, French)
             
         Returns:
             Debate session with results
@@ -55,7 +57,8 @@ class DebateManager:
                 proposition_members=proposition_members,
                 opposition_members=opposition_members,
                 num_arguments=num_arguments,
-                num_rebuttals=num_rebuttals
+                num_rebuttals=num_rebuttals,
+                language=language
             )
             
             # Validate
@@ -128,7 +131,8 @@ class DebateSession:
         proposition_members: list,
         opposition_members: list,
         num_arguments: int = 3,
-        num_rebuttals: int = 3
+        num_rebuttals: int = 3,
+        language: str = "English"
     ) -> DebateState:
         """
         Start a new debate.
@@ -139,6 +143,7 @@ class DebateSession:
             opposition_members: Opposition team members
             num_arguments: Number of arguments
             num_rebuttals: Number of rebuttals
+            language: Language for output (English, Arabic, French)
             
         Returns:
             Debate state with results
@@ -148,7 +153,8 @@ class DebateSession:
             proposition_members=proposition_members,
             opposition_members=opposition_members,
             num_arguments=num_arguments,
-            num_rebuttals=num_rebuttals
+            num_rebuttals=num_rebuttals,
+            language=language
         )
         
         self.current_session = session

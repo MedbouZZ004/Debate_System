@@ -22,7 +22,8 @@ class AnalysisAgent(DebateAgent):
         self,
         motion: str,
         proposition: SideCase,
-        opposition: SideCase
+        opposition: SideCase,
+        language: str = "English"
     ) -> Dict[str, Any]:
         """
         Analyze the complete debate.
@@ -40,7 +41,7 @@ class AnalysisAgent(DebateAgent):
         
         try:
             # Generate analysis prompt
-            prompt = self._build_analysis_prompt(motion, proposition, opposition)
+            prompt = self._build_analysis_prompt(motion, proposition, opposition, language)
             
             # Call LLM
             response = await self._call_llm(prompt)
@@ -61,7 +62,8 @@ class AnalysisAgent(DebateAgent):
         self,
         motion: str,
         proposition: SideCase,
-        opposition: SideCase
+        opposition: SideCase,
+        language: str = "English"
     ) -> str:
         """Build analysis prompt for LLM."""
         prop_args = "\n".join([
@@ -112,7 +114,11 @@ Provide your analysis in exactly this JSON format - must be valid JSON:
 
 Provide a thorough, balanced analysis that evaluates both teams fairly."""
         
-        return prompt
+        language_instruction = (f"\n\nIMPORTANT: You MUST write your entire response "
+                                 f"\u2014 all clash points, analysis, and reasoning "
+                                 f"\u2014 in {language}. Do not use any other language.")
+        
+        return prompt + language_instruction
     
     def _parse_analysis_response(self, response: str) -> Dict[str, Any]:
         """Parse LLM response to extract analysis."""
