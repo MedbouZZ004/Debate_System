@@ -7,7 +7,7 @@ Implements the debate workflow as a state machine.
 import asyncio
 from typing import Dict, Any, List
 from logger import DebateLogger
-from models import DebateState, DebateConfig, SideCase
+from models import DebateState, DebateConfig, SideCase, Argument, Rebuttal
 from agents import (
     ResearchAgent,
     ArgumentConstructionAgent,
@@ -89,7 +89,6 @@ class DebateWorkflow:
             )
             
             # Update state with arguments
-            from models import Argument
             for arg_data in prop_args.get("arguments", []):
                 if isinstance(arg_data, Argument):
                     state.proposition.arguments.append(arg_data)
@@ -124,8 +123,20 @@ class DebateWorkflow:
             )
             
             # Update state with rebuttals
-            state.proposition.rebuttals = prop_rebuttals.get("rebuttals", {})
-            state.opposition.rebuttals = opp_rebuttals.get("rebuttals", {})
+            prop_rebuttals_list = prop_rebuttals.get("rebuttals", [])
+            opp_rebuttals_list = opp_rebuttals.get("rebuttals", [])
+            
+            for rebuttal_data in prop_rebuttals_list:
+                if isinstance(rebuttal_data, Rebuttal):
+                    state.proposition.rebuttals.append(rebuttal_data)
+                else:
+                    state.proposition.rebuttals.append(Rebuttal(**rebuttal_data))
+            
+            for rebuttal_data in opp_rebuttals_list:
+                if isinstance(rebuttal_data, Rebuttal):
+                    state.opposition.rebuttals.append(rebuttal_data)
+                else:
+                    state.opposition.rebuttals.append(Rebuttal(**rebuttal_data))
             
             # Phase 4: Debate Analysis
             self.logger.info("Phase 4: Debate analysis")

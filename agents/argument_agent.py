@@ -34,14 +34,29 @@ class ArgumentConstructionAgent(DebateAgent):
             side: The side (proposition/opposition)
             num_arguments: Number of arguments to construct
             research_data: Optional research data to inform arguments
+            language: Language for output (default: "English")
             
         Returns:
             Dictionary with constructed arguments
+            
+        Raises:
+            ValueError: If inputs are invalid
+            Exception: If argument construction fails
         """
         start_time = time.time()
         self._log_start(f"argument construction for {side.side}")
         
         try:
+            # Validate inputs
+            self._validate_prompt_input(motion, side.side)
+            self._validate_team_members(side.team_members)
+            
+            if num_arguments < 1 or num_arguments > 10:
+                raise ValueError("Number of arguments must be between 1 and 10")
+            
+            if language and len(language) > 50:
+                raise ValueError("Language specification too long")
+            
             # Generate arguments prompt
             prompt = self._build_arguments_prompt(
                 motion, side, num_arguments, research_data, language

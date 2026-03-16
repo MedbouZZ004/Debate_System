@@ -89,9 +89,11 @@ TRANSLATIONS = {
         "position_corr": "🔗 Position Correlation:",
         "rebuttals_prop": "Rebuttals to Opposition",
         "rebuttals_opp": "Rebuttals to Proposition",
+        "rebuttal_label": "Rebuttal",
         "rebuttal_target": "Rebuttal",
         "main_rebuttal": "Main Rebuttal:",
         "logical_flaw": "Logical Flaw:",
+        "counter_point": "Counter Point:",
         "rebuttal_impact": "Impact:",
         "analysis_title": "⚖️ Debate Analysis",
         "winner_label": "🏆 Winner",
@@ -234,9 +236,11 @@ TRANSLATIONS = {
         "position_corr": "🔗 الارتباط بالموقف:",
         "rebuttals_prop": "ردود على المعارضين",
         "rebuttals_opp": "ردود على المؤيدين",
+        "rebuttal_label": "رد",
         "rebuttal_target": "رد",
         "main_rebuttal": "الرد الرئيسي:",
         "logical_flaw": "الخلل المنطقي:",
+        "counter_point": "نقطة مضادة:",
         "rebuttal_impact": "التأثير:",
         "analysis_title": "⚖️ تحليل النقاش",
         "winner_label": "🏆 الفائز",
@@ -377,9 +381,11 @@ TRANSLATIONS = {
         "position_corr": "🔗 Corrélation de position :",
         "rebuttals_prop": "Réfutations à l'Opposition",
         "rebuttals_opp": "Réfutations à la Proposition",
+        "rebuttal_label": "Réfutation",
         "rebuttal_target": "Réfutation",
         "main_rebuttal": "Réfutation principale :",
         "logical_flaw": "Défaut logique :",
+        "counter_point": "Point de contre-argument :",
         "rebuttal_impact": "Impact :",
         "analysis_title": "⚖️ Analyse du débat",
         "winner_label": "🏆 Vainqueur",
@@ -882,16 +888,16 @@ with tab2:
 
             if side_case.rebuttals:
                 st.subheader(rebuttals_label)
-                for key, rebuttal in side_case.rebuttals.items():
-                    if isinstance(rebuttal, dict):
-                        st.markdown(f"""
-                            <div class="rebuttal-box">
-                            <h5>{rebuttal.get('targets_argument', T['rebuttal_target'])}</h5>
-                            <p><strong>{T['main_rebuttal']}</strong> {rebuttal.get('main_rebuttal', 'N/A')}</p>
-                            <p><strong>{T['logical_flaw']}</strong> {rebuttal.get('logical_flaw', 'N/A')}</p>
-                            <p><strong>{T['rebuttal_impact']}</strong> {rebuttal.get('impact', 'N/A')}</p>
-                            </div>
-                            """, unsafe_allow_html=True)
+                for i, rebuttal in enumerate(side_case.rebuttals, 1):
+                    st.markdown(f"""
+                        <div class="rebuttal-box">
+                        <h5>{T['rebuttal_label']} {i}: {rebuttal.targets_argument}</h5>
+                        <p><strong>{T['main_rebuttal']}</strong> {rebuttal.main_rebuttal}</p>
+                        <p><strong>{T['logical_flaw']}</strong> {rebuttal.logical_flaw}</p>
+                        <p><strong>{T['counter_point']}</strong> {rebuttal.counter_point}</p>
+                        <p><strong>{T['rebuttal_impact']}</strong> {rebuttal.impact}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
 
         with results_tab1:
             st.subheader(f"🟦 {', '.join(state.proposition.team_members)}")

@@ -42,6 +42,39 @@ class Argument(BaseModel):
         if not v or not v.strip():
             raise ValueError("Field cannot be empty")
         return v.strip()
+    
+    @validator('contention')
+    def contention_length(cls, v):
+        """Validate contention length."""
+        if len(v) < 5:
+            raise ValueError("Contention must be at least 5 characters")
+        if len(v) > 500:
+            raise ValueError("Contention must be less than 500 characters")
+        return v
+    
+    @validator('evidence')
+    def evidence_length(cls, v):
+        """Validate evidence list length."""
+        if len(v) > 20:
+            raise ValueError("Evidence list cannot exceed 20 pieces")
+        return v
+
+
+class Rebuttal(BaseModel):
+    """Represents a rebuttal to an opponent argument."""
+    
+    targets_argument: str = Field(..., description="The opponent's argument being rebutted")
+    main_rebuttal: str = Field(..., description="The core rebuttal point")
+    logical_flaw: str = Field(..., description="The logical flaw in the opponent's argument")
+    counter_point: str = Field(..., description="Our counter-argument")
+    impact: str = Field(..., description="Why this rebuttal matters to the debate")
+    
+    @validator('targets_argument', 'main_rebuttal', 'logical_flaw', 'counter_point', 'impact')
+    def non_empty_string(cls, v):
+        """Ensure non-empty strings."""
+        if not v or not v.strip():
+            raise ValueError("Field cannot be empty")
+        return v.strip()
 
 
 class SideCase(BaseModel):
@@ -58,7 +91,26 @@ class SideCase(BaseModel):
     arguments: List[Argument] = Field(default_factory=list, description="Main arguments")
     
     # Rebuttals
-    rebuttals: Dict[str, List[str]] = Field(default_factory=dict, description="Rebuttals to opponent arguments")
+    rebuttals: List[Rebuttal] = Field(default_factory=list, description="Rebuttals to opponent arguments")
+    
+    @validator('side')
+    def validate_side(cls, v):
+        """Validate side is either Proposition or Opposition."""
+        if v not in ["Proposition", "Opposition"]:
+            raise ValueError("Side must be 'Proposition' or 'Opposition'")
+        return v
+    
+    @validator('team_members')
+    def validate_team_members(cls, v):
+        """Validate team members list."""
+        if not v or len(v) == 0:
+            raise ValueError("Team must have at least one member")
+        if len(v) > 10:
+            raise ValueError("Team cannot have more than 10 members")
+        for member in v:
+            if not member or not member.strip():
+                raise ValueError("Team member names cannot be empty")
+        return v
     
     class Config:
         json_schema_extra = {
@@ -91,6 +143,31 @@ class DebateState(BaseModel):
     # Metadata
     created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
     execution_time_seconds: Optional[float] = Field(None, description="Total execution time")
+    
+    @validator('motion')
+    def validate_motion(cls, v):
+        """Validate motion string."""
+        if not v or not v.strip():
+            raise ValueError("Motion cannot be empty")
+        if len(v) < 10:
+            raise ValueError("Motion must be at least 10 characters")
+        if len(v) > 2000:
+            raise ValueError("Motion must be less than 2000 characters")
+        return v.strip()
+    
+    @validator('predicted_winner')
+    def validate_predicted_winner(cls, v):
+        """Validate predicted winner if provided."""
+        if v and v not in ["Proposition", "Opposition"]:
+            raise ValueError("Predicted winner must be 'Proposition' or 'Opposition'")
+        return v
+    
+    @validator('execution_time_seconds')
+    def validate_execution_time(cls, v):
+        """Validate execution time."""
+        if v and v < 0:
+            raise ValueError("Execution time cannot be negative")
+        return v
 
 
 class DebateConfig(BaseModel):
@@ -105,18 +182,38 @@ class DebateConfig(BaseModel):
     language: str = Field(default="English", description="Language for the debate output (English, Arabic, French)")
     
     @validator('motion')
-    def non_empty_motion(cls, v):
-        """Ensure non-empty motion."""
+    def validate_motion(cls, v):
+        """Validate motion string."""
         if not v or not v.strip():
             raise ValueError("Motion cannot be empty")
+        if len(v) < 10:
+            raise ValueError("Motion must be at least 10 characters")
+        if len(v) > 2000:
+            raise ValueError("Motion must be less than 2000 characters")
         return v.strip()
     
     @validator('proposition_members', 'opposition_members')
-    def valid_members(cls, v):
-        """Ensure non-empty member lists."""
+    def validate_members(cls, v):
+        """Validate member lists."""
         if not v or len(v) == 0:
             raise ValueError("Team must have at least one member")
+        if len(v) > 10:
+            raise ValueError("Team cannot have more than 10 members")
+        for member in v:
+            if not member or not member.strip():
+                raise ValueError("Team member names cannot be empty")
+            if len(member) > 100:
+                raise ValueError(f"Team member name too long: {member}")
         return v
+    
+    @validator('language')
+    def validate_language(cls, v):
+        """Validate language specification."""
+        if not v or not v.strip():
+            raise ValueError("Language cannot be empty")
+        if len(v) > 50:
+            raise ValueError("Language specification too long")
+        return v.strip()
     
     class Config:
         json_schema_extra = {
