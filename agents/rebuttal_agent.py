@@ -8,7 +8,7 @@ import time
 import json
 from typing import Dict, Any, List
 from agents.base_agent import DebateAgent
-from models import SideCase, Argument
+from models import SideCase, Argument, Rebuttal
 
 
 class RebuttalAgent(DebateAgent):
@@ -36,14 +36,32 @@ class RebuttalAgent(DebateAgent):
             attacking_side: The side being rebutted
             opponent_arguments: Arguments to rebut
             num_rebuttals: Number of rebuttals to generate
+            language: Language for output (default: "English")
             
         Returns:
             Dictionary with generated rebuttals
+            
+        Raises:
+            ValueError: If inputs are invalid
+            Exception: If rebuttal generation fails
         """
         start_time = time.time()
         self._log_start(f"rebuttal generation for {defending_side.side}")
         
         try:
+            # Validate inputs
+            self._validate_prompt_input(motion, defending_side.side)
+            self._validate_team_members(defending_side.team_members)
+            
+            if not opponent_arguments or len(opponent_arguments) == 0:
+                raise ValueError("Must provide at least one opponent argument to rebut")
+            
+            if num_rebuttals < 1 or num_rebuttals > 10:
+                raise ValueError("Number of rebuttals must be between 1 and 10")
+            
+            if language and len(language) > 50:
+                raise ValueError("Language specification too long")
+            
             # Generate rebuttals prompt
             prompt = self._build_rebuttals_prompt(
                 motion,
@@ -132,7 +150,7 @@ Generate {min(num_rebuttals, len(opponent_arguments))} strong rebuttals that eff
         
         return prompt + language_instruction
     
-    def _parse_rebuttals_response(self, response: str) -> Dict[str, Any]:
+    def _parse_rebuttals_response(self, response: str) -> List[Rebuttal]:
         """Parse LLM response to extract rebuttals."""
         try:
             # Extract JSON from response
@@ -143,19 +161,20 @@ Generate {min(num_rebuttals, len(opponent_arguments))} strong rebuttals that eff
                 json_str = response[start_idx:end_idx]
                 data = json.loads(json_str)
                 
-                rebuttals = {}
-                for i, rebuttal_data in enumerate(data.get("rebuttals", []), 1):
-                    key = f"rebuttal_{i}"
-                    rebuttals[key] = {
-                        "targets_argument": rebuttal_data.get("targets_argument", ""),
-                        "main_rebuttal": rebuttal_data.get("main_rebuttal", ""),
-                        "logical_flaw": rebuttal_data.get("logical_flaw", ""),
-                        "counter_point": rebuttal_data.get("counter_point", ""),
-                        "impact": rebuttal_data.get("impact", "")
-                    }
+                rebuttals = []
+                for rebuttal_data in data.get("rebuttals", []):
+                    rebuttal = Rebuttal(
+                        targets_argument=rebuttal_data.get("targets_argument", ""),
+                        main_rebuttal=rebuttal_data.get("main_rebuttal", ""),
+                        logical_flaw=rebuttal_data.get("logical_flaw", ""),
+                        counter_point=rebuttal_data.get("counter_point", ""),
+                        impact=rebuttal_data.get("impact", "")
+                    )
+                    rebuttals.append(rebuttal)
                 
                 return rebuttals
             
-            return {}
-        except:
-            return {}
+            return []
+        except Exception as e:
+            self.logger.warning(f"Failed to parse rebuttals response: {str(e)}")
+            return []

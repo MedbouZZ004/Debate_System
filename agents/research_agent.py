@@ -24,14 +24,26 @@ class ResearchAgent(DebateAgent):
         Args:
             motion: The debate motion
             side: The side (proposition/opposition) to research
+            language: Language for output (default: "English")
             
         Returns:
             Dictionary with research results
+            
+        Raises:
+            ValueError: If inputs are invalid
+            Exception: If research fails
         """
         start_time = time.time()
         self._log_start(f"research for {side.side}")
         
         try:
+            # Validate inputs
+            self._validate_prompt_input(motion, side.side)
+            self._validate_team_members(side.team_members)
+            
+            if language and len(language) > 50:
+                raise ValueError("Language specification too long")
+            
             # Generate research prompt
             prompt = self._build_research_prompt(motion, side, language)
             

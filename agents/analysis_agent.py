@@ -32,14 +32,33 @@ class AnalysisAgent(DebateAgent):
             motion: The debate motion
             proposition: Proposition side case
             opposition: Opposition side case
+            language: Language for output (default: "English")
             
         Returns:
             Dictionary with analysis results
+            
+        Raises:
+            ValueError: If inputs are invalid
+            Exception: If analysis fails
         """
         start_time = time.time()
         self._log_start("debate analysis")
         
         try:
+            # Validate inputs
+            self._validate_prompt_input(motion)
+            self._validate_team_members(proposition.team_members)
+            self._validate_team_members(opposition.team_members)
+            
+            if not proposition.arguments or len(proposition.arguments) == 0:
+                raise ValueError("Proposition side must have at least one argument")
+            
+            if not opposition.arguments or len(opposition.arguments) == 0:
+                raise ValueError("Opposition side must have at least one argument")
+            
+            if language and len(language) > 50:
+                raise ValueError("Language specification too long")
+            
             # Generate analysis prompt
             prompt = self._build_analysis_prompt(motion, proposition, opposition, language)
             
